@@ -4,7 +4,7 @@
 
 **Goal:** Stand up the Spoke Nx monorepo skeleton with `libs/shared-types` and `libs/design-tokens` (fully tested), local quality gates (ESLint, Prettier, commitlint, Husky), a GitHub Actions CI pipeline, and a GitHub Project bootstrap script.
 
-**Architecture:** Package-based Nx workspace over npm workspaces — each lib is an npm package with its own `lint`/`typecheck`/`test` scripts that Nx discovers and caches; no Nx generators or executors needed at this stage. Token *values* are copied verbatim from `DESIGN_SYSTEM.md` (the authoritative source — never invent or "improve" a value). Contracts are zod v4 schemas in `@spoke/shared-types`.
+**Architecture:** Package-based Nx workspace over npm workspaces — each lib is an npm package with its own `lint`/`typecheck`/`test` scripts that Nx discovers and caches; no Nx generators or executors needed at this stage. Token _values_ are copied verbatim from `DESIGN_SYSTEM.md` (the authoritative source — never invent or "improve" a value). Contracts are zod v4 schemas in `@spoke/shared-types`.
 
 **Tech Stack:** Nx 21, TypeScript 5.8 (strict), Vitest 3, zod 4, ESLint 9 (flat config) + typescript-eslint 8, Prettier 3, Husky 9 + commitlint 19, GitHub Actions, `gh` CLI.
 
@@ -15,6 +15,7 @@
 ### Task 1: Nx workspace skeleton
 
 **Files:**
+
 - Create: `package.json`, `nx.json`, `tsconfig.base.json`, `.gitignore`, `.nvmrc`, `.editorconfig`
 
 - [ ] **Step 1: Create root `package.json`**
@@ -92,6 +93,7 @@
 - [ ] **Step 4: Create `.gitignore`, `.nvmrc`, `.editorconfig`**
 
 `.gitignore`:
+
 ```
 node_modules/
 dist/
@@ -103,11 +105,13 @@ coverage/
 ```
 
 `.nvmrc`:
+
 ```
 22
 ```
 
 `.editorconfig`:
+
 ```
 root = true
 
@@ -136,11 +140,13 @@ git commit -m "chore: scaffold Nx package-based monorepo workspace"
 ### Task 2: Prettier + ESLint (flat config)
 
 **Files:**
+
 - Create: `.prettierrc.json`, `.prettierignore`, `eslint.config.mjs`
 
 - [ ] **Step 1: Create `.prettierrc.json` and `.prettierignore`**
 
 `.prettierrc.json`:
+
 ```json
 {
   "singleQuote": true,
@@ -150,6 +156,7 @@ git commit -m "chore: scaffold Nx package-based monorepo workspace"
 ```
 
 `.prettierignore`:
+
 ```
 node_modules/
 dist/
@@ -194,6 +201,7 @@ git commit -m "chore: add Prettier and ESLint flat config with typescript-eslint
 ### Task 3: Husky + commitlint
 
 **Files:**
+
 - Create: `commitlint.config.mjs`, `.husky/commit-msg`, `.husky/pre-commit`
 
 - [ ] **Step 1: Create `commitlint.config.mjs`**
@@ -207,11 +215,13 @@ export default { extends: ['@commitlint/config-conventional'] };
 Run: `npx husky init`
 
 Replace `.husky/pre-commit` contents with:
+
 ```
 npx nx affected -t lint typecheck test --uncommitted
 ```
 
 Create `.husky/commit-msg`:
+
 ```
 npx --no-install commitlint --edit "$1"
 ```
@@ -230,6 +240,7 @@ Expected: exit 0, no errors.
 git add commitlint.config.mjs .husky/ package.json
 git commit -m "chore: add Husky hooks and commitlint with conventional commits"
 ```
+
 Expected: pre-commit runs `nx affected` (no projects yet → succeeds immediately); commit-msg passes.
 
 ---
@@ -237,6 +248,7 @@ Expected: pre-commit runs `nx affected` (no projects yet → succeeds immediatel
 ### Task 4: `libs/shared-types` — workspace/tenant contracts (TDD)
 
 **Files:**
+
 - Create: `libs/shared-types/package.json`, `libs/shared-types/tsconfig.json`, `libs/shared-types/vitest.config.ts`
 - Create: `libs/shared-types/src/index.ts`
 - Test: `libs/shared-types/src/index.spec.ts`
@@ -246,6 +258,7 @@ Scope (spec §5/§6, YAGNI — channel/message schemas arrive in M4 when first u
 - [ ] **Step 1: Create the package scaffolding**
 
 `libs/shared-types/package.json`:
+
 ```json
 {
   "name": "@spoke/shared-types",
@@ -263,6 +276,7 @@ Scope (spec §5/§6, YAGNI — channel/message schemas arrive in M4 when first u
 ```
 
 `libs/shared-types/tsconfig.json`:
+
 ```json
 {
   "extends": "../../tsconfig.base.json",
@@ -271,6 +285,7 @@ Scope (spec §5/§6, YAGNI — channel/message schemas arrive in M4 when first u
 ```
 
 `libs/shared-types/vitest.config.ts`:
+
 ```ts
 import { defineConfig } from 'vitest/config';
 import tsconfigPaths from 'vite-tsconfig-paths';
@@ -287,6 +302,7 @@ Expected: zod added; workspace links `@spoke/shared-types`.
 - [ ] **Step 2: Write the failing test**
 
 `libs/shared-types/src/index.spec.ts`:
+
 ```ts
 import { describe, expect, it } from 'vitest';
 import {
@@ -314,8 +330,13 @@ describe('UserSchema', () => {
 
   it('rejects an invalid email', () => {
     expect(
-      UserSchema.safeParse({ id: uuid, email: 'nope', displayName: 'R', avatarUrl: null, createdAt: iso })
-        .success,
+      UserSchema.safeParse({
+        id: uuid,
+        email: 'nope',
+        displayName: 'R',
+        avatarUrl: null,
+        createdAt: iso,
+      }).success,
     ).toBe(false);
   });
 });
@@ -327,8 +348,13 @@ describe('WorkspaceSchema', () => {
   });
 
   it('rejects a non-uuid id and an invalid slug', () => {
-    expect(WorkspaceSchema.safeParse({ id: 'x', name: 'Acme', slug: 'acme', createdAt: iso }).success).toBe(false);
-    expect(WorkspaceSchema.safeParse({ id: uuid, name: 'Acme', slug: 'Not A Slug!', createdAt: iso }).success).toBe(false);
+    expect(
+      WorkspaceSchema.safeParse({ id: 'x', name: 'Acme', slug: 'acme', createdAt: iso }).success,
+    ).toBe(false);
+    expect(
+      WorkspaceSchema.safeParse({ id: uuid, name: 'Acme', slug: 'Not A Slug!', createdAt: iso })
+        .success,
+    ).toBe(false);
   });
 });
 
@@ -362,6 +388,7 @@ Expected: FAIL — cannot resolve `@spoke/shared-types` / `src/index.ts` does no
 - [ ] **Step 4: Write the implementation**
 
 `libs/shared-types/src/index.ts`:
+
 ```ts
 import { z } from 'zod';
 
@@ -426,6 +453,7 @@ git commit -m "feat(shared-types): add workspace/tenant zod contracts"
 ### Task 5: `libs/design-tokens` — token files + parity test (TDD)
 
 **Files:**
+
 - Create: `libs/design-tokens/package.json`, `libs/design-tokens/tsconfig.json`, `libs/design-tokens/vitest.config.ts`
 - Create: `libs/design-tokens/src/colors.ts`, `spacing.ts`, `typography.ts`, `radii.ts`, `shadows.ts`, `motion.ts`, `z-index.ts`, `index.ts`
 - Test: `libs/design-tokens/src/tokens.spec.ts`
@@ -435,6 +463,7 @@ git commit -m "feat(shared-types): add workspace/tenant zod contracts"
 - [ ] **Step 1: Create the package scaffolding** — same three files as Task 4 with name `@spoke/design-tokens` and **no dependencies**:
 
 `libs/design-tokens/package.json`:
+
 ```json
 {
   "name": "@spoke/design-tokens",
@@ -451,6 +480,7 @@ git commit -m "feat(shared-types): add workspace/tenant zod contracts"
 ```
 
 `libs/design-tokens/tsconfig.json`:
+
 ```json
 {
   "extends": "../../tsconfig.base.json",
@@ -459,6 +489,7 @@ git commit -m "feat(shared-types): add workspace/tenant zod contracts"
 ```
 
 `libs/design-tokens/vitest.config.ts`:
+
 ```ts
 import { defineConfig } from 'vitest/config';
 import tsconfigPaths from 'vite-tsconfig-paths';
@@ -472,6 +503,7 @@ export default defineConfig({
 - [ ] **Step 2: Write the failing parity test**
 
 `libs/design-tokens/src/tokens.spec.ts`:
+
 ```ts
 import { describe, expect, it } from 'vitest';
 import { lightTheme, darkTheme, tokens } from '@spoke/design-tokens';
@@ -643,6 +675,7 @@ export type Theme = { color: Record<keyof typeof lightTheme.color, string> };
 ```
 
 `libs/design-tokens/src/spacing.ts`:
+
 ```ts
 export const space = {
   0: 0,
@@ -674,6 +707,7 @@ export const layout = {
 ```
 
 `libs/design-tokens/src/typography.ts`:
+
 ```ts
 export const fontFamily = {
   sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif',
@@ -688,22 +722,32 @@ export const fontWeight = { regular: '400', medium: '500', semibold: '600', bold
 export const lineHeight = { tight: 1.2, base: 1.46, relaxed: 1.6 } as const;
 
 export const textStyle = {
-  messageBody: { fontSize: fontSize.base, lineHeight: lineHeight.base, fontWeight: fontWeight.regular },
+  messageBody: {
+    fontSize: fontSize.base,
+    lineHeight: lineHeight.base,
+    fontWeight: fontWeight.regular,
+  },
   senderName: { fontSize: fontSize.base, fontWeight: fontWeight.bold },
   timestamp: { fontSize: fontSize.xs, color: 'textTertiary' },
   channelName: { fontSize: fontSize.md, fontWeight: fontWeight.bold },
   sidebarItem: { fontSize: fontSize.base, fontWeight: fontWeight.regular },
-  sectionHeader: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold, textTransform: 'uppercase' },
+  sectionHeader: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
+    textTransform: 'uppercase',
+  },
   code: { fontFamily: fontFamily.mono, fontSize: fontSize.sm },
 } as const;
 ```
 
 `libs/design-tokens/src/radii.ts`:
+
 ```ts
 export const radius = { none: 0, sm: 4, base: 6, md: 8, lg: 12, xl: 16, full: 9999 } as const;
 ```
 
 `libs/design-tokens/src/shadows.ts`:
+
 ```ts
 export const shadow = {
   sm: '0 1px 2px rgba(0,0,0,0.08)',
@@ -718,6 +762,7 @@ export const shadowElevation = { sm: 2, base: 3, md: 6, lg: 12, popover: 10 } as
 ```
 
 `libs/design-tokens/src/motion.ts`:
+
 ```ts
 export const motion = {
   duration: { fast: 100, base: 160, slow: 240 },
@@ -726,6 +771,7 @@ export const motion = {
 ```
 
 `libs/design-tokens/src/z-index.ts`:
+
 ```ts
 export const zIndex = {
   base: 0,
@@ -740,6 +786,7 @@ export const zIndex = {
 ```
 
 `libs/design-tokens/src/index.ts`:
+
 ```ts
 import { space, layout } from './spacing';
 import { fontFamily, fontSize, fontWeight, lineHeight, textStyle } from './typography';
@@ -749,7 +796,20 @@ import { motion } from './motion';
 import { zIndex } from './z-index';
 
 export { palette, lightTheme, darkTheme, type Theme } from './colors';
-export { space, layout, fontFamily, fontSize, fontWeight, lineHeight, textStyle, radius, shadow, shadowElevation, motion, zIndex };
+export {
+  space,
+  layout,
+  fontFamily,
+  fontSize,
+  fontWeight,
+  lineHeight,
+  textStyle,
+  radius,
+  shadow,
+  shadowElevation,
+  motion,
+  zIndex,
+};
 export { contrastRatio } from './contrast';
 
 /** Platform-agnostic tokens (theme-independent). Themes carry `color`. */
@@ -790,6 +850,7 @@ git commit -m "feat(design-tokens): add token source of truth from DESIGN_SYSTEM
 ### Task 6: WCAG contrast utility + AA contrast tests (TDD)
 
 **Files:**
+
 - Create: `libs/design-tokens/src/contrast.ts`
 - Test: `libs/design-tokens/src/contrast.spec.ts`
 - Modify: `libs/design-tokens/src/index.ts` (add the `contrastRatio` export line shown in Task 5)
@@ -799,6 +860,7 @@ Contrast pairs and thresholds: AA normal text (≥4.5) for the primary reading p
 - [ ] **Step 1: Write the failing tests**
 
 `libs/design-tokens/src/contrast.spec.ts`:
+
 ```ts
 import { describe, expect, it } from 'vitest';
 import { contrastRatio, lightTheme, darkTheme } from '@spoke/design-tokens';
@@ -863,12 +925,19 @@ Expected: FAIL — `contrastRatio` is not exported.
 - [ ] **Step 3: Implement `contrast.ts` and add the export**
 
 `libs/design-tokens/src/contrast.ts`:
+
 ```ts
 type Rgb = readonly [number, number, number];
 
 function parseHex(hex: string): Rgb {
   const h = hex.replace('#', '');
-  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+  const full =
+    h.length === 3
+      ? h
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : h;
   return [
     parseInt(full.slice(0, 2), 16),
     parseInt(full.slice(2, 4), 16),
@@ -910,6 +979,7 @@ export function contrastRatio(fg: string, bg: string): number {
 ```
 
 In `libs/design-tokens/src/index.ts`, add (as shown in Task 5's index):
+
 ```ts
 export { contrastRatio } from './contrast';
 ```
@@ -931,6 +1001,7 @@ git commit -m "feat(design-tokens): add WCAG contrast utility and AA token tests
 ### Task 7: GitHub Actions CI
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`
 
 - [ ] **Step 1: Create the workflow**
@@ -955,13 +1026,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Commitlint (PR commits)
+        if: github.event_name == 'pull_request'
+        run: npx commitlint --from=origin/${{ github.base_ref }} --to=HEAD --verbose
       - name: Format check
         run: npx prettier --check .
       - name: Lint, typecheck, test
         run: npx nx run-many -t lint typecheck test
-      - name: Commitlint (PR commits)
-        if: github.event_name == 'pull_request'
-        run: npx commitlint --from=${{ github.event.pull_request.base.sha }} --to=HEAD --verbose
 ```
 
 - [ ] **Step 2: Verify locally (CI parity)**
@@ -983,6 +1054,7 @@ Note for the PR: branch protection (require the `quality` job before merge) is a
 ### Task 8: GitHub Project bootstrap script
 
 **Files:**
+
 - Create: `scripts/bootstrap-github-project.sh`
 
 The script creates milestones M0–M10 (titles/descriptions from spec §13), one tracking issue per milestone, and a "Spoke Roadmap" GitHub Project containing them. It requires a GitHub remote and `gh auth login` with the `project` scope; it is run manually once, never in CI. `--dry-run` prints every action without calling `gh` mutations.
@@ -1078,6 +1150,7 @@ git commit -m "chore: add GitHub Project bootstrap script (milestones M0-M10)"
 ### Task 9: CLAUDE.md routing files
 
 **Files:**
+
 - Create: `CLAUDE.md`, `libs/shared-types/CLAUDE.md`, `libs/design-tokens/CLAUDE.md`
 
 Root stays routing-only (spec §11); each package carries its own scoped context.
@@ -1092,10 +1165,12 @@ Self-hostable, multi-tenant team chat. Architecture & all pinned decisions:
 source of truth: `DESIGN_SYSTEM.md`.
 
 ## Routing — read the CLAUDE.md of the package you are working in
+
 - `libs/shared-types/CLAUDE.md` — zod contracts
 - `libs/design-tokens/CLAUDE.md` — design tokens
 
 ## Workspace conventions
+
 - Nx package-based monorepo; every package has `lint`, `typecheck`, `test` scripts.
 - Run targets via `npx nx run-many -t lint typecheck test` or `npx nx test <project>`.
 - Conventional commits enforced (commitlint + Husky). TDD: failing test first, always.
@@ -1104,6 +1179,7 @@ source of truth: `DESIGN_SYSTEM.md`.
 - [ ] **Step 2: Create the two package files**
 
 `libs/shared-types/CLAUDE.md`:
+
 ```markdown
 # @spoke/shared-types
 
@@ -1116,6 +1192,7 @@ DTOs, Centrifugo event payloads. Spec §5–§6 defines the entities.
 ```
 
 `libs/design-tokens/CLAUDE.md`:
+
 ```markdown
 # @spoke/design-tokens
 

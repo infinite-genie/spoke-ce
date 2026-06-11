@@ -21,26 +21,26 @@ Both planes are authorized by the same workspace-membership model. Calls are nev
 
 Every decision below was proposed with alternatives and explicitly approved.
 
-| # | Decision | Choice | Key rationale |
-|---|----------|--------|---------------|
-| 1 | Tenancy isolation | Shared DB + mandatory `workspace_id` scoping | Simple ops and migrations, easy Testcontainers testing; schema designed so Postgres RLS can be layered on later as hardening |
-| 2 | Calls timing | Designed-in from day one; shipped as the calls milestone (M7) after the web client | Calls reuse the proven auth path; v1 text plane validated first; call UI needs a client to live in |
-| 3 | Auth | Email/password + identity-only JWT (access ~10 min) + rotating refresh; OIDC later | Workspace context from URL + per-request membership check → instant revocation, no stale role claims |
-| 4 | ORM / data layer | Drizzle + tenant-scoped repository pattern | Thin over SQL; repos constructed from `WorkspaceContext`; raw client unexported; plain SQL migrations keep RLS option clean |
-| 5 | Centrifugo subscription auth | Per-channel subscribe tokens (~5 min TTL, auto-refresh) + server-API force-unsubscribe on revocation | Stateless, no per-subscribe HTTP hop; revocation is push-based, not TTL-bound |
-| 6 | Roles (per workspace) | Owner / Admin / Member; Guest deferred | Guest breaks the simple membership model (channel-scoped access); YAGNI for v1 |
-| 7 | v1 feature cut | Full text plane: workspaces, channels, DMs, messaging, read state, threads, reactions, presence/typing, search, file upload | User decision; calls follow as the next product milestone |
-| 8 | Mobile E2E | Maestro (replaces Detox from the original constraints) | Expo ecosystem convergence; no custom dev-client friction; less CI flakiness |
-| 9 | Message format | Markdown subset stored as plain text | One shared tokenizer (`libs/markdown`), two renderers; searchable as-is; composer is a textarea with shortcuts, not a rich-text editor |
-| 10 | File uploads | API-issued presigned MinIO URLs; keys `ws_<workspaceId>/<channelId>/<fileId>` | Bytes never transit the API; tenancy enforced at grant issuance — same pattern as LiveKit tokens |
-| 11 | Search tenancy | Meilisearch index-per-workspace (`messages_ws_<id>`), all queries proxied through the API | Physical isolation parity with rooms/keys; a query cannot span tenants; self-hosted instances have few workspaces |
-| 12 | DM model | DMs are workspace-scoped and unified as a channel type | Same two people in two shared workspaces = two separate DM conversations; zero tenancy special cases |
-| 13 | Threads | Flat one level (`parent_message_id`), Slack-style | Nesting is YAGNI |
-| 14 | Write path | Postgres-first, then publish to Centrifugo; no transactional outbox in v1 | DB is source of truth; publish-after-commit with retry + Centrifugo client recovery covers gaps; outbox is a documented hardening option |
-| 15 | Instance governance (v1) | Open registration (env flag to disable); any user can create workspaces; joining via invite links | No SMTP dependency in v1; instance-admin panel deferred |
-| 16 | IDs | App-generated UUIDv7 | Time-ordered → message pagination keys off the primary key |
-| 17 | Message deletion | Tombstones (body cleared, row kept) | Threads and read-state stay consistent |
-| 18 | Non-member responses | 404, never 403 | Workspace/channel existence is never leaked across tenants |
+| #   | Decision                     | Choice                                                                                                                      | Key rationale                                                                                                                            |
+| --- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Tenancy isolation            | Shared DB + mandatory `workspace_id` scoping                                                                                | Simple ops and migrations, easy Testcontainers testing; schema designed so Postgres RLS can be layered on later as hardening             |
+| 2   | Calls timing                 | Designed-in from day one; shipped as the calls milestone (M7) after the web client                                          | Calls reuse the proven auth path; v1 text plane validated first; call UI needs a client to live in                                       |
+| 3   | Auth                         | Email/password + identity-only JWT (access ~10 min) + rotating refresh; OIDC later                                          | Workspace context from URL + per-request membership check → instant revocation, no stale role claims                                     |
+| 4   | ORM / data layer             | Drizzle + tenant-scoped repository pattern                                                                                  | Thin over SQL; repos constructed from `WorkspaceContext`; raw client unexported; plain SQL migrations keep RLS option clean              |
+| 5   | Centrifugo subscription auth | Per-channel subscribe tokens (~5 min TTL, auto-refresh) + server-API force-unsubscribe on revocation                        | Stateless, no per-subscribe HTTP hop; revocation is push-based, not TTL-bound                                                            |
+| 6   | Roles (per workspace)        | Owner / Admin / Member; Guest deferred                                                                                      | Guest breaks the simple membership model (channel-scoped access); YAGNI for v1                                                           |
+| 7   | v1 feature cut               | Full text plane: workspaces, channels, DMs, messaging, read state, threads, reactions, presence/typing, search, file upload | User decision; calls follow as the next product milestone                                                                                |
+| 8   | Mobile E2E                   | Maestro (replaces Detox from the original constraints)                                                                      | Expo ecosystem convergence; no custom dev-client friction; less CI flakiness                                                             |
+| 9   | Message format               | Markdown subset stored as plain text                                                                                        | One shared tokenizer (`libs/markdown`), two renderers; searchable as-is; composer is a textarea with shortcuts, not a rich-text editor   |
+| 10  | File uploads                 | API-issued presigned MinIO URLs; keys `ws_<workspaceId>/<channelId>/<fileId>`                                               | Bytes never transit the API; tenancy enforced at grant issuance — same pattern as LiveKit tokens                                         |
+| 11  | Search tenancy               | Meilisearch index-per-workspace (`messages_ws_<id>`), all queries proxied through the API                                   | Physical isolation parity with rooms/keys; a query cannot span tenants; self-hosted instances have few workspaces                        |
+| 12  | DM model                     | DMs are workspace-scoped and unified as a channel type                                                                      | Same two people in two shared workspaces = two separate DM conversations; zero tenancy special cases                                     |
+| 13  | Threads                      | Flat one level (`parent_message_id`), Slack-style                                                                           | Nesting is YAGNI                                                                                                                         |
+| 14  | Write path                   | Postgres-first, then publish to Centrifugo; no transactional outbox in v1                                                   | DB is source of truth; publish-after-commit with retry + Centrifugo client recovery covers gaps; outbox is a documented hardening option |
+| 15  | Instance governance (v1)     | Open registration (env flag to disable); any user can create workspaces; joining via invite links                           | No SMTP dependency in v1; instance-admin panel deferred                                                                                  |
+| 16  | IDs                          | App-generated UUIDv7                                                                                                        | Time-ordered → message pagination keys off the primary key                                                                               |
+| 17  | Message deletion             | Tombstones (body cleared, row kept)                                                                                         | Threads and read-state stay consistent                                                                                                   |
+| 18  | Non-member responses         | 404, never 403                                                                                                              | Workspace/channel existence is never leaked across tenants                                                                               |
 
 ## 3. Service topology
 
@@ -166,19 +166,19 @@ zod schemas in `shared-types` do triple duty: NestJS request validation, typed c
 
 GitHub Project board with milestones + seeded issues (bootstrap script via `gh`/GraphQL is an M0 task). One issue → one worktree → one branch → one PR, with subagent-driven development and code-review checkpoints.
 
-| Milestone | Contents |
-|---|---|
-| **M0 Foundations** | Nx skeleton, shared-types, design-tokens lib, CI bootstrap (lint/typecheck/test/commitlint/Husky), GH project bootstrap script |
-| **M1 Design system** | Run the design plugin per `DESIGN_PLUGIN_PROMPT.md`; ui-web + ui-native (Tiers 1–3) + Storybook ×2 + token/contrast tests + token-guard ESLint rule. Then: GitNexus analyze/setup, per-folder CLAUDE.md |
-| **M2 Infra** | docker-compose (all 8 services), Centrifugo config, LiveKit config (keys, UDP exposure), first draft of self-hosting/NAT docs |
-| **M3 Identity & tenancy** | Auth (register/login/refresh), workspaces, memberships, roles, invites, TenantContextGuard, scoped data layer, isolation tests |
-| **M4 Messaging core** | Channels/DMs, Centrifugo integration (tokens, publish, recovery), messages (markdown subset), threads, reactions, presence/typing, read state |
-| **M5 Files + search** | Presigned upload/download flow, attachments; Meilisearch index-per-workspace + indexing queue + search API |
-| **M6 Web client** | Full v1 UI on the design system: workspace rail + switcher, sidebar, channel view, composer, threads, reactions, presence, search, files |
-| **M7 Calls** | LiveKit token endpoint, call lifecycle + webhooks, Centrifugo signaling, web call UI (CallBanner/CallStage/controls), screen share (web), cross-tenant call tests. Backend portion can start in parallel after M4 |
-| **M8 Desktop** | Tauri shell; **screen-share publishing spike** (see Risks) |
-| **M9 Mobile** | RN client to visual parity (workspace switcher incl.), LiveKit RN call UI, RN screen-capture setup |
-| **M10 Hardening** | Full E2E in Docker, CI gates complete, self-hosting docs finalized |
+| Milestone                 | Contents                                                                                                                                                                                                          |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **M0 Foundations**        | Nx skeleton, shared-types, design-tokens lib, CI bootstrap (lint/typecheck/test/commitlint/Husky), GH project bootstrap script                                                                                    |
+| **M1 Design system**      | Run the design plugin per `DESIGN_PLUGIN_PROMPT.md`; ui-web + ui-native (Tiers 1–3) + Storybook ×2 + token/contrast tests + token-guard ESLint rule. Then: GitNexus analyze/setup, per-folder CLAUDE.md           |
+| **M2 Infra**              | docker-compose (all 8 services), Centrifugo config, LiveKit config (keys, UDP exposure), first draft of self-hosting/NAT docs                                                                                     |
+| **M3 Identity & tenancy** | Auth (register/login/refresh), workspaces, memberships, roles, invites, TenantContextGuard, scoped data layer, isolation tests                                                                                    |
+| **M4 Messaging core**     | Channels/DMs, Centrifugo integration (tokens, publish, recovery), messages (markdown subset), threads, reactions, presence/typing, read state                                                                     |
+| **M5 Files + search**     | Presigned upload/download flow, attachments; Meilisearch index-per-workspace + indexing queue + search API                                                                                                        |
+| **M6 Web client**         | Full v1 UI on the design system: workspace rail + switcher, sidebar, channel view, composer, threads, reactions, presence, search, files                                                                          |
+| **M7 Calls**              | LiveKit token endpoint, call lifecycle + webhooks, Centrifugo signaling, web call UI (CallBanner/CallStage/controls), screen share (web), cross-tenant call tests. Backend portion can start in parallel after M4 |
+| **M8 Desktop**            | Tauri shell; **screen-share publishing spike** (see Risks)                                                                                                                                                        |
+| **M9 Mobile**             | RN client to visual parity (workspace switcher incl.), LiveKit RN call UI, RN screen-capture setup                                                                                                                |
+| **M10 Hardening**         | Full E2E in Docker, CI gates complete, self-hosting docs finalized                                                                                                                                                |
 
 **v1 release = M0–M6.** Each milestone gets its own implementation plan (superpowers writing-plans → executing-plans), broken into worktree-sized tasks.
 
