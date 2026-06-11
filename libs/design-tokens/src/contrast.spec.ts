@@ -10,6 +10,12 @@ describe('contrastRatio', () => {
     expect(contrastRatio('#5E4FB8', '#5E4FB8')).toBeCloseTo(1, 5);
   });
 
+  it('pins the sRGB linearization exponent (gray exercises the power branch)', () => {
+    // lin(128/255) = ((128/255 + 0.055) / 1.055) ** 2.4 ≈ 0.2158
+    // contrast vs black = (0.2158 + 0.05) / 0.05 ≈ 5.32; a 2.2 exponent would give ≈ 5.9
+    expect(contrastRatio('#808080', '#000000')).toBeCloseTo(5.32, 1);
+  });
+
   it('composites rgba foregrounds over the background', () => {
     // 50% white over black ≈ #808080-ish, well below white-on-black contrast
     const r = contrastRatio('rgba(255,255,255,0.5)', '#000000');
