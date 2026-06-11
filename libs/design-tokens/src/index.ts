@@ -6,6 +6,7 @@ import { motion } from './motion.js';
 import { zIndex } from './z-index.js';
 
 export { palette, lightTheme, darkTheme, type Theme } from './colors.js';
+export { contrastRatio } from './contrast.js';
 export {
   space,
   layout,
