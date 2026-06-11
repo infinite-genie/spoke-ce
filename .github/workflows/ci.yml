@@ -17,10 +17,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Commitlint (PR commits)
+        if: github.event_name == 'pull_request'
+        run: npx commitlint --from=origin/${{ github.base_ref }} --to=HEAD --verbose
       - name: Format check
         run: npx prettier --check .
       - name: Lint, typecheck, test
         run: npx nx run-many -t lint typecheck test
-      - name: Commitlint (PR commits)
-        if: github.event_name == 'pull_request'
-        run: npx commitlint --from=${{ github.event.pull_request.base.sha }} --to=HEAD --verbose
