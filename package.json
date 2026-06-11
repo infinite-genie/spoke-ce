@@ -4,8 +4,14 @@
   "private": true,
   "license": "AGPL-3.0-only",
   "type": "module",
-  "workspaces": ["apps/*", "libs/*", "tools/*"],
-  "engines": { "node": ">=22" },
+  "workspaces": [
+    "apps/*",
+    "libs/*",
+    "tools/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "prepare": "husky",
     "format": "prettier --write .",
