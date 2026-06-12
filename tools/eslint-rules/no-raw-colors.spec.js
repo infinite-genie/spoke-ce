@@ -14,6 +14,8 @@ describe('no-raw-colors', () => {
         { code: "const border = 'solid';" },
         { code: "const id = 'user#42';" },
         { code: "const tag = 'rgbish';" },
+        { code: 'const border = `1px solid ${tokens.color.border}`;' },
+        { code: "const c = 'color: red';" },
       ],
       invalid: [],
     });
@@ -29,6 +31,32 @@ describe('no-raw-colors', () => {
         { code: "const c = 'hsl(220, 50%, 50%)';", errors: [{ messageId: 'rawColor' }] },
         { code: 'const s = `1px solid #ABCDEF`;', errors: [{ messageId: 'rawColor' }] },
       ],
+    });
+  });
+
+  it('supports allowPattern for known false positives', () => {
+    // Documents the default false positives (no options → these are invalid)
+    ruleTester.run('no-raw-colors', plugin.rules['no-raw-colors'], {
+      valid: [],
+      invalid: [
+        { code: "const href = '#add-button';", errors: [{ messageId: 'rawColor' }] },
+        { code: "const msg = 'Expected rgba() format';", errors: [{ messageId: 'rawColor' }] },
+      ],
+    });
+
+    // With allowPattern option, the same strings are allowed
+    ruleTester.run('no-raw-colors', plugin.rules['no-raw-colors'], {
+      valid: [
+        {
+          code: "const href = '#add-button';",
+          options: [{ allowPattern: '^#[a-z][a-z-]*$' }],
+        },
+        {
+          code: "const msg = 'Expected rgba() format';",
+          options: [{ allowPattern: 'rgba?\\(\\) format' }],
+        },
+      ],
+      invalid: [],
     });
   });
 });

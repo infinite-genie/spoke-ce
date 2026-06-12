@@ -17,6 +17,7 @@
 ### Task 1: Amend DESIGN_SYSTEM.md
 
 **Files:**
+
 - Modify: `DESIGN_SYSTEM.md` (§3 typography, §4 motion)
 
 - [ ] **Step 1: Apply the three edits**
@@ -66,6 +67,7 @@ git commit -m "docs(design): remove sansNative, drop timestamp color, differenti
 ### Task 2: Sync `@spoke/design-tokens` (TDD)
 
 **Files:**
+
 - Modify: `libs/design-tokens/src/tokens.spec.ts`
 - Modify: `libs/design-tokens/src/typography.ts`, `libs/design-tokens/src/motion.ts`
 
@@ -74,12 +76,12 @@ git commit -m "docs(design): remove sansNative, drop timestamp color, differenti
 In `libs/design-tokens/src/tokens.spec.ts`, append inside the `describe('token object shape', ...)` block:
 
 ```ts
-  it('reflects the 2026-06-12 amendments', () => {
-    expect(Object.keys(tokens.fontFamily).sort()).toEqual(['mono', 'sans']);
-    expect(tokens.textStyle.timestamp).not.toHaveProperty('color');
-    expect(tokens.motion.easing.emphasized).toBe('cubic-bezier(0.05, 0.7, 0.1, 1.0)');
-    expect(tokens.motion.easing.emphasized).not.toBe(tokens.motion.easing.standard);
-  });
+it('reflects the 2026-06-12 amendments', () => {
+  expect(Object.keys(tokens.fontFamily).sort()).toEqual(['mono', 'sans']);
+  expect(tokens.textStyle.timestamp).not.toHaveProperty('color');
+  expect(tokens.motion.easing.emphasized).toBe('cubic-bezier(0.05, 0.7, 0.1, 1.0)');
+  expect(tokens.motion.easing.emphasized).not.toBe(tokens.motion.easing.standard);
+});
 ```
 
 - [ ] **Step 2: Run to verify it fails**
@@ -110,12 +112,14 @@ git commit -m "feat(design-tokens): apply approved token amendments"
 ### Task 3: `tools/eslint-rules` — `no-raw-colors` rule (TDD)
 
 **Files:**
+
 - Create: `tools/eslint-rules/package.json`, `tools/eslint-rules/index.js`
 - Test: `tools/eslint-rules/no-raw-colors.spec.js`
 
 - [ ] **Step 1: Create the package scaffolding**
 
 `tools/eslint-rules/package.json`:
+
 ```json
 {
   "name": "@spoke/eslint-rules",
@@ -135,6 +139,7 @@ Run: `npm install` (links the workspace — **lockfile changes, commit it in Ste
 - [ ] **Step 2: Write the failing test**
 
 `tools/eslint-rules/no-raw-colors.spec.js`:
+
 ```js
 import { describe, it } from 'vitest';
 import { RuleTester } from 'eslint';
@@ -148,10 +153,12 @@ describe('no-raw-colors', () => {
   it('accepts token usage and innocent strings', () => {
     ruleTester.run('no-raw-colors', plugin.rules['no-raw-colors'], {
       valid: [
-        { code: "const c = tokens.color.primary;" },
+        { code: 'const c = tokens.color.primary;' },
         { code: "const border = 'solid';" },
         { code: "const id = 'user#42';" },
         { code: "const tag = 'rgbish';" },
+        { code: 'const border = `1px solid ${tokens.color.border}`;' },
+        { code: "const c = 'color: red';" },
       ],
       invalid: [],
     });
@@ -169,6 +176,32 @@ describe('no-raw-colors', () => {
       ],
     });
   });
+
+  it('supports allowPattern for known false positives', () => {
+    // Documents the default false positives (no options → these are invalid)
+    ruleTester.run('no-raw-colors', plugin.rules['no-raw-colors'], {
+      valid: [],
+      invalid: [
+        { code: "const href = '#add-button';", errors: [{ messageId: 'rawColor' }] },
+        { code: "const msg = 'Expected rgba() format';", errors: [{ messageId: 'rawColor' }] },
+      ],
+    });
+
+    // With allowPattern option, the same strings are allowed
+    ruleTester.run('no-raw-colors', plugin.rules['no-raw-colors'], {
+      valid: [
+        {
+          code: "const href = '#add-button';",
+          options: [{ allowPattern: '^#[a-z][a-z-]*$' }],
+        },
+        {
+          code: "const msg = 'Expected rgba() format';",
+          options: [{ allowPattern: 'rgba?\\(\\) format' }],
+        },
+      ],
+      invalid: [],
+    });
+  });
 });
 ```
 
@@ -180,7 +213,9 @@ Expected: FAIL — `index.js` does not exist / has no rules.
 - [ ] **Step 4: Implement the rule**
 
 `tools/eslint-rules/index.js`:
+
 ```js
+// Scope: string Literals + TemplateElements only; JSXText prose (e.g. <p>#fff</p>) is deliberately not covered.
 const COLOR_PATTERN = /#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b|\b(?:rgba?|hsla?)\(/;
 
 const noRawColors = {
@@ -189,24 +224,36 @@ const noRawColors = {
     docs: {
       description:
         'Disallow raw color literals (hex, rgb/rgba, hsl/hsla) — use @spoke/design-tokens semantic tokens.',
+      url: 'https://github.com/infinite-genie/spoke-ce/tree/main/tools/eslint-rules',
     },
     messages: {
       rawColor:
         'Raw color "{{value}}" is forbidden here; use a semantic token from @spoke/design-tokens.',
     },
-    schema: [],
+    schema: [
+      {
+        type: 'object',
+        properties: { allowPattern: { type: 'string' } },
+        additionalProperties: false,
+      },
+    ],
   },
   create(context) {
+    const allow = context.options[0]?.allowPattern
+      ? new RegExp(context.options[0].allowPattern)
+      : null;
     const report = (node, value) =>
       context.report({ node, messageId: 'rawColor', data: { value } });
     return {
       Literal(node) {
         if (typeof node.value === 'string' && COLOR_PATTERN.test(node.value)) {
+          if (allow?.test(node.value)) return;
           report(node, node.value);
         }
       },
       TemplateElement(node) {
         if (COLOR_PATTERN.test(node.value.raw)) {
+          if (allow?.test(node.value.raw)) return;
           report(node, node.value.raw);
         }
       },
@@ -237,6 +284,7 @@ git commit -m "feat(eslint-rules): add no-raw-colors token-guard rule"
 ### Task 4: Wire the guard into the root flat config (scoped to ui libs)
 
 **Files:**
+
 - Modify: `eslint.config.mjs`
 
 - [ ] **Step 1: Add the scoped block**
@@ -270,11 +318,14 @@ Run: `npx eslint . && npx nx run-many -t lint`
 Expected: exit 0, no output (no ui libs yet → block inert, but a plugin-load error would fail here).
 
 Then prove the guard actually fires — create a throwaway file and expect an error:
+
 ```bash
 mkdir -p libs/ui-web/src && printf 'export const c = "#FFF";\nexport const n = 37;\n' > libs/ui-web/src/probe.ts
 npx eslint libs/ui-web/src/probe.ts
 ```
+
 Expected: exits non-zero reporting BOTH `spoke/no-raw-colors` and `no-magic-numbers`. Then delete the probe:
+
 ```bash
 rm -rf libs/ui-web
 ```
@@ -293,7 +344,7 @@ git commit -m "chore: enforce token-guard lint rules for future ui libraries"
 - [ ] **Step 1: CI parity from a clean install**
 
 Run: `npm ci && npx prettier --check . && npx nx run-many -t lint typecheck test`
-Expected: all green — 3 projects (shared-types, design-tokens, eslint-rules); vitest totals: shared-types 7, design-tokens 29, eslint-rules 2.
+Expected: all green — 3 projects (shared-types, design-tokens, eslint-rules); vitest totals: shared-types 7, design-tokens 29, eslint-rules 3.
 
 - [ ] **Step 2: Commit history check**
 
