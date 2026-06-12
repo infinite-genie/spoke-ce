@@ -304,7 +304,12 @@ import spokeRules from '@spoke/eslint-rules';
       'spoke/no-raw-colors': 'error',
       'no-magic-numbers': [
         'error',
-        { ignore: [-1, 0, 1, 2, 100], ignoreArrayIndexes: true, ignoreDefaultValues: true },
+        {
+          ignore: [-1, 0, 1, 2, 100],
+          ignoreArrayIndexes: true,
+          ignoreDefaultValues: true,
+          detectObjects: true,
+        },
       ],
     },
   },
