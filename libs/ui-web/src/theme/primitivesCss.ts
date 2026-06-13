@@ -15,4 +15,17 @@ export const primitivesCss = `
 .spk-text {
   color: var(--spk-fg, var(--color-textPrimary));
 }
+.spk-spinner {
+  display: inline-flex;
+  color: var(--spk-fg, var(--color-textSecondary));
+}
+@keyframes spk-spin {
+  to { transform: rotate(360deg); }
+}
+.spk-spin {
+  animation: spk-spin 0.7s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .spk-spin { animation-duration: 2s; }
+}
 `;
