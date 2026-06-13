@@ -21,6 +21,7 @@ export function Badge({ count, variant = 'mention', max = 99, className, style }
   if (count <= 0) return null;
   const v = VARIANT_TOKENS[variant];
   const label = count > max ? `${max}+` : `${count}`;
+  const noun = variant === 'mention' ? (count === 1 ? 'mention' : 'mentions') : 'unread';
   const composed: StyleWithVars = {
     '--spk-bg': cssVar(v.bg),
     '--spk-fg': cssVar(v.fg),
@@ -38,7 +39,7 @@ export function Badge({ count, variant = 'mention', max = 99, className, style }
     <span
       className={['spk-badge', className].filter(Boolean).join(' ')}
       style={composed}
-      aria-label={`${count} ${variant === 'mention' ? 'mentions' : 'unread'}`}
+      aria-label={`${count} ${noun}`}
     >
       {label}
     </span>

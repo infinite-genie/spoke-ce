@@ -29,4 +29,9 @@ describe('Badge', () => {
     render(<Badge count={2} variant="mention" />);
     expect(screen.getByLabelText('2 mentions')).toBeInTheDocument();
   });
+
+  it('uses a singular noun for a count of one', () => {
+    render(<Badge count={1} variant="mention" />);
+    expect(screen.getByLabelText('1 mention')).toBeInTheDocument();
+  });
 });
