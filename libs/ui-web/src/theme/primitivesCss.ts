@@ -117,4 +117,9 @@ export const primitivesCss = `
   color: var(--spk-fg);
   box-sizing: border-box;
 }
+.spk-divider {
+  background: var(--spk-bg);
+  border: none;
+  flex-shrink: 0;
+}
 `;
