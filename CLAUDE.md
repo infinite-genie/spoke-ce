@@ -8,6 +8,7 @@ source of truth: `DESIGN_SYSTEM.md`.
 
 - `libs/shared-types/CLAUDE.md` — zod contracts
 - `libs/design-tokens/CLAUDE.md` — design tokens
+- `libs/ui-web/CLAUDE.md` — web component library (Tier 1+ primitives)
 
 ## Workspace conventions
 
