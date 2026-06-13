@@ -28,4 +28,21 @@ export const primitivesCss = `
 @media (prefers-reduced-motion: reduce) {
   .spk-spin { animation-duration: 2s; }
 }
+.spk-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--spk-bg, transparent);
+  color: var(--spk-fg);
+  border: 1px solid var(--spk-border, transparent);
+  font-family: inherit;
+  cursor: pointer;
+}
+.spk-button:hover:not(:disabled) {
+  background: var(--spk-bg-hover);
+}
+.spk-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 `;

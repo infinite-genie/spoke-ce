@@ -10,3 +10,4 @@ export { Box, Stack, type BoxProps } from './components/Box.js';
 export { Text, type TextProps, type TextVariant } from './components/Text.js';
 export { Icon, type IconProps, type IconName, type IconSize } from './components/Icon.js';
 export { Spinner, type SpinnerProps } from './components/Spinner.js';
+export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from './components/Button.js';
