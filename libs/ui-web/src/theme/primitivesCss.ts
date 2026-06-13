@@ -9,4 +9,7 @@ export const primitivesCss = `
   outline: 2px solid var(--color-borderFocus);
   outline-offset: 2px;
 }
+.spk-box {
+  background: var(--spk-bg, transparent);
+}
 `;
