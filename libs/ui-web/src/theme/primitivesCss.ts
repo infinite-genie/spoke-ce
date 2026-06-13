@@ -86,4 +86,27 @@ export const primitivesCss = `
   background: var(--spk-presence);
   box-shadow: 0 0 0 2px var(--color-bgApp);
 }
+.spk-input {
+  display: inline-flex;
+  align-items: center;
+  background: var(--spk-bg);
+  color: var(--spk-fg);
+  border: 1px solid var(--spk-border);
+}
+.spk-input:focus-within {
+  outline: 2px solid var(--color-borderFocus);
+  outline-offset: 0;
+}
+.spk-input input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: inherit;
+  font: inherit;
+}
+.spk-input input::placeholder {
+  color: var(--color-textTertiary);
+}
 `;
