@@ -1,6 +1,10 @@
+import { type CSSProperties } from 'react';
 import { lightTheme, darkTheme, type Theme } from '@spoke/design-tokens';
 
 export type ColorKey = keyof Theme['color'];
+
+/** CSSProperties that also permits custom-property (`--*`) keys without casts. */
+export type StyleWithVars = CSSProperties & Record<`--${string}`, string>;
 
 /** Reference a themed color as a CSS custom property (resolved by ThemeProvider). */
 export function cssVar(key: ColorKey): string {

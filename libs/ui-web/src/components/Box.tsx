@@ -1,6 +1,6 @@
 import { type CSSProperties, type ReactNode } from 'react';
 import { space } from '@spoke/design-tokens';
-import { cssVar, type ColorKey } from '../theme/themeVars.js';
+import { cssVar, type ColorKey, type StyleWithVars } from '../theme/themeVars.js';
 
 type SpaceKey = keyof typeof space;
 
@@ -12,12 +12,15 @@ export interface BoxProps {
   align?: CSSProperties['alignItems'];
   justify?: CSSProperties['justifyContent'];
   background?: ColorKey;
+  role?: string;
   className?: string;
   style?: CSSProperties;
   /** test/data hooks and aria pass through */
   [key: `data-${string}`]: string | undefined;
+  [key: `aria-${string}`]: string | undefined;
 }
 
+/** Flex primitive: always renders a `display:flex` container (not a plain block div). */
 export function Box({
   children,
   padding,
@@ -30,7 +33,7 @@ export function Box({
   style,
   ...rest
 }: BoxProps) {
-  const composed = {
+  const composed: StyleWithVars = {
     display: 'flex',
     flexDirection: direction,
     alignItems: align,
@@ -39,7 +42,7 @@ export function Box({
     gap: gap === undefined ? undefined : space[gap],
     ...(background ? { '--spk-bg': cssVar(background) } : {}),
     ...style,
-  } as CSSProperties;
+  };
 
   return (
     <div className={['spk-box', className].filter(Boolean).join(' ')} style={composed} {...rest}>
@@ -48,6 +51,6 @@ export function Box({
   );
 }
 
-export function Stack(props: BoxProps) {
+export function Stack(props: Omit<BoxProps, 'direction'>) {
   return <Box direction="column" {...props} />;
 }

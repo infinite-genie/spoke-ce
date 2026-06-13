@@ -1,4 +1,4 @@
-export { cssVar, buildThemeCss, type ColorKey } from './theme/themeVars.js';
+export { cssVar, buildThemeCss, type ColorKey, type StyleWithVars } from './theme/themeVars.js';
 export { primitivesCss } from './theme/primitivesCss.js';
 export {
   ThemeProvider,
