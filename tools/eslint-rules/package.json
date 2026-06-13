@@ -1,0 +1,11 @@
+{
+  "name": "@spoke/eslint-rules",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "vitest run"
+  }
+}

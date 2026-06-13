@@ -1,7 +1,6 @@
 export const fontFamily = {
   sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif',
   mono: '"SF Mono", Menlo, Consolas, "Roboto Mono", monospace',
-  sansNative: undefined, // RN default San Francisco / Roboto
 } as const;
 
 export const fontSize = {
@@ -30,7 +29,7 @@ export const textStyle = {
     fontWeight: fontWeight.regular,
   },
   senderName: { fontSize: fontSize.base, fontWeight: fontWeight.bold },
-  timestamp: { fontSize: fontSize.xs, color: 'textTertiary' },
+  timestamp: { fontSize: fontSize.xs },
   channelName: { fontSize: fontSize.md, fontWeight: fontWeight.bold },
   sidebarItem: { fontSize: fontSize.base, fontWeight: fontWeight.regular },
   sectionHeader: {

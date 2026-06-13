@@ -48,4 +48,11 @@ describe('token object shape', () => {
     expect(lightTheme.color.bgSidebar).toBe('#1E1A3C');
     expect(darkTheme.color.bgSidebar).toBe('#16122B');
   });
+
+  it('reflects the 2026-06-12 amendments', () => {
+    expect(Object.keys(tokens.fontFamily).sort()).toEqual(['mono', 'sans']);
+    expect(tokens.textStyle.timestamp).not.toHaveProperty('color');
+    expect(tokens.motion.easing.emphasized).toBe('cubic-bezier(0.05, 0.7, 0.1, 1.0)');
+    expect(tokens.motion.easing.emphasized).not.toBe(tokens.motion.easing.standard);
+  });
 });

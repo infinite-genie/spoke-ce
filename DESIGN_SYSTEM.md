@@ -230,7 +230,6 @@ System font stack (loads instantly, no licensing). Mobile uses platform defaults
 export const fontFamily = {
   sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif',
   mono: '"SF Mono", Menlo, Consolas, "Roboto Mono", monospace',
-  sansNative: undefined, // RN default San Francisco / Roboto
 };
 
 export const fontSize = {
@@ -253,6 +252,8 @@ export const fontWeight = {
 export const lineHeight = { tight: 1.2, base: 1.46, relaxed: 1.6 };
 ```
 
+React Native components leave fontFamily unset to get the platform default (San Francisco / Roboto).
+
 Type style presets (use these, not raw values):
 
 ```ts
@@ -263,7 +264,7 @@ export const textStyle = {
     fontWeight: fontWeight.regular,
   },
   senderName: { fontSize: fontSize.base, fontWeight: fontWeight.bold },
-  timestamp: { fontSize: fontSize.xs, color: 'textTertiary' },
+  timestamp: { fontSize: fontSize.xs },
   channelName: { fontSize: fontSize.md, fontWeight: fontWeight.bold },
   sidebarItem: { fontSize: fontSize.base, fontWeight: fontWeight.regular },
   sectionHeader: {
@@ -274,6 +275,8 @@ export const textStyle = {
   code: { fontFamily: fontFamily.mono, fontSize: fontSize.sm },
 };
 ```
+
+Presets are purely typographic; components apply text colors (e.g. timestamps use textTertiary) from the active theme.
 
 ---
 
@@ -293,7 +296,10 @@ export const shadow = {
 
 export const motion = {
   duration: { fast: 100, base: 160, slow: 240 },
-  easing: { standard: 'cubic-bezier(0.2, 0, 0, 1)', emphasized: 'cubic-bezier(0.2, 0, 0, 1)' },
+  easing: {
+    standard: 'cubic-bezier(0.2, 0, 0, 1)',
+    emphasized: 'cubic-bezier(0.05, 0.7, 0.1, 1.0)',
+  },
 };
 
 export const zIndex = {
