@@ -61,4 +61,29 @@ export const primitivesCss = `
   opacity: 0.55;
   cursor: not-allowed;
 }
+.spk-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: visible;
+  background: var(--spk-bg);
+  color: var(--spk-fg);
+  user-select: none;
+}
+.spk-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.spk-presence {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  border-radius: 9999px;
+  background: var(--spk-presence);
+  box-shadow: 0 0 0 2px var(--color-bgApp);
+}
 `;

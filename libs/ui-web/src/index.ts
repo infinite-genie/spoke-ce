@@ -17,3 +17,4 @@ export {
   type IconButtonVariant,
   type IconButtonSize,
 } from './components/IconButton.js';
+export { Avatar, type AvatarProps, type AvatarSize, type Presence } from './components/Avatar.js';
