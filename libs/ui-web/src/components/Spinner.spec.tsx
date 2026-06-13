@@ -24,6 +24,8 @@ describe('Spinner', () => {
 
   it('exposes the color token via a custom property', () => {
     render(<Spinner color="textLink" />);
-    expect(screen.getByRole('status').style.getPropertyValue('--spk-fg')).toBe('var(--color-textLink)');
+    expect(screen.getByRole('status').style.getPropertyValue('--spk-fg')).toBe(
+      'var(--color-textLink)',
+    );
   });
 });

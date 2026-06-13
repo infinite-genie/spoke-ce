@@ -26,7 +26,9 @@ describe('buildThemeCss', () => {
   it('emits one declaration per color key in both themes', () => {
     const keys = Object.keys(lightTheme.color);
     for (const k of keys) {
-      expect(css).toContain(`--color-${k}: ${lightTheme.color[k as keyof typeof lightTheme.color]};`);
+      expect(css).toContain(
+        `--color-${k}: ${lightTheme.color[k as keyof typeof lightTheme.color]};`,
+      );
       expect(css).toContain(`--color-${k}: ${darkTheme.color[k as keyof typeof darkTheme.color]};`);
     }
   });

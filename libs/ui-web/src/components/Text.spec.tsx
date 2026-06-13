@@ -27,9 +27,13 @@ describe('Text', () => {
 
   it('exposes the color token via a custom property (default textPrimary)', () => {
     render(<Text>a</Text>);
-    expect(screen.getByText('a').style.getPropertyValue('--spk-fg')).toBe('var(--color-textPrimary)');
+    expect(screen.getByText('a').style.getPropertyValue('--spk-fg')).toBe(
+      'var(--color-textPrimary)',
+    );
     render(<Text color="textTertiary">b</Text>);
-    expect(screen.getByText('b').style.getPropertyValue('--spk-fg')).toBe('var(--color-textTertiary)');
+    expect(screen.getByText('b').style.getPropertyValue('--spk-fg')).toBe(
+      'var(--color-textTertiary)',
+    );
   });
 
   it('clamps to numberOfLines', () => {

@@ -21,7 +21,9 @@ describe('IconButton', () => {
 
   it('uses the mobile touch-target size at lg', () => {
     render(<IconButton icon="Search" label="Search" size="lg" />);
-    expect(screen.getByRole('button', { name: 'Search' }).style.width).toBe(`${layout.touchTarget}px`);
+    expect(screen.getByRole('button', { name: 'Search' }).style.width).toBe(
+      `${layout.touchTarget}px`,
+    );
   });
 
   it('shows a spinner and disables while loading', () => {

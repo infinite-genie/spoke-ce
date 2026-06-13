@@ -6,4 +6,6 @@ export default meta;
 type Story = StoryObj<typeof Icon>;
 
 export const Default: Story = { args: { name: 'Hash', label: 'channel' } };
-export const Large: Story = { args: { name: 'Send', size: 'lg', color: 'actionSend', label: 'send' } };
+export const Large: Story = {
+  args: { name: 'Send', size: 'lg', color: 'actionSend', label: 'send' },
+};

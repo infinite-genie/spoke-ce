@@ -29,7 +29,9 @@ describe('Box', () => {
 
   it('exposes a background color token via a custom property', () => {
     render(<Box data-testid="b" background="bgSecondary" />);
-    expect(screen.getByTestId('b').style.getPropertyValue('--spk-bg')).toBe('var(--color-bgSecondary)');
+    expect(screen.getByTestId('b').style.getPropertyValue('--spk-bg')).toBe(
+      'var(--color-bgSecondary)',
+    );
   });
 
   it('merges user className and style (user style wins)', () => {

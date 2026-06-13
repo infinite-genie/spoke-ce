@@ -31,9 +31,9 @@ describe('Button', () => {
 
   it('gives the secondary variant a border token', () => {
     render(<Button variant="secondary">More</Button>);
-    expect(screen.getByRole('button', { name: 'More' }).style.getPropertyValue('--spk-border')).toBe(
-      'var(--color-borderStrong)',
-    );
+    expect(
+      screen.getByRole('button', { name: 'More' }).style.getPropertyValue('--spk-border'),
+    ).toBe('var(--color-borderStrong)');
   });
 
   it('sizes height from the space scale', () => {
@@ -54,7 +54,11 @@ describe('Button', () => {
     const { rerender } = render(<Button onClick={onClick}>Go</Button>);
     await userEvent.click(screen.getByRole('button'));
     expect(onClick).toHaveBeenCalledTimes(1);
-    rerender(<Button onClick={onClick} disabled>Go</Button>);
+    rerender(
+      <Button onClick={onClick} disabled>
+        Go
+      </Button>,
+    );
     await userEvent.click(screen.getByRole('button'));
     expect(onClick).toHaveBeenCalledTimes(1);
   });

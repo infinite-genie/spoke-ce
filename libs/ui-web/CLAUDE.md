@@ -14,9 +14,9 @@ React (DOM) implementation of the Spoke design system. Visual parity twin of
   `{ '--spk-bg': cssVar('primary') }`), and `theme/primitivesCss.ts` maps those to real
   CSS properties plus `:hover` / `:focus-visible` / `:disabled` states. This keeps token
   references verbatim (and jsdom-testable) and is the only way to express pseudo-states.
-- **Type every style object as `StyleWithVars`** (`CSSProperties & Record<\`--${string}\`, string>`,
-  exported from `theme/themeVars.ts`) — never `as CSSProperties` casts. This allows the
-  `--spk-*` custom properties with no cast and keeps `tsc` clean.
+- **Type every style object as `StyleWithVars`** (exported from `theme/themeVars.ts`; it is
+  `CSSProperties` intersected with a string-valued `--*` custom-property record) — never
+  `as CSSProperties` casts. This allows the `--spk-*` custom properties with no cast and keeps `tsc` clean.
 - **Dimensions/type → ordinary inline style** read from tokens (numbers render as `px`).
 - Every component forwards `className` and `style` (user values win — spread `style` last).
   Container/primitive components (Box/Text) also forward `role` + `aria-*` + `data-*`;

@@ -4,7 +4,7 @@
 
 **Goal:** Build the `@spoke/ui-web` React library — the design-token → CSS-custom-property bridge, a light/dark `ThemeProvider`, and all ten Tier 1 primitives — every visual value sourced from `@spoke/design-tokens`, with Storybook stories per variant.
 
-**Architecture:** Components are plain React function components. **Colors** are applied as inline CSS *custom properties* (`--spk-bg: var(--color-primary)`, etc.) and mapped to real CSS properties by one shared stylesheet `primitives.css`; this keeps token references verbatim and jsdom-safe, and lets `:hover`/`:focus-visible`/`:disabled` states live in CSS using the same custom props. **Dimensions and type** are applied as ordinary inline style values read from `space`/`radius`/`fontSize`/`textStyle` (member access — never numeric literals, so the M1a token-guard passes). `buildThemeCss()` turns `lightTheme`/`darkTheme` into `:root` and `[data-theme='dark']` variable blocks; `ThemeProvider` injects that plus `primitives.css` once and toggles `data-theme`. Unit tests assert each variant carries the correct token (custom-prop value) and the correct a11y role/label; Storybook + a `composeStories` render test enforce a story per variant.
+**Architecture:** Components are plain React function components. **Colors** are applied as inline CSS _custom properties_ (`--spk-bg: var(--color-primary)`, etc.) and mapped to real CSS properties by one shared stylesheet `primitives.css`; this keeps token references verbatim and jsdom-safe, and lets `:hover`/`:focus-visible`/`:disabled` states live in CSS using the same custom props. **Dimensions and type** are applied as ordinary inline style values read from `space`/`radius`/`fontSize`/`textStyle` (member access — never numeric literals, so the M1a token-guard passes). `buildThemeCss()` turns `lightTheme`/`darkTheme` into `:root` and `[data-theme='dark']` variable blocks; `ThemeProvider` injects that plus `primitives.css` once and toggles `data-theme`. Unit tests assert each variant carries the correct token (custom-prop value) and the correct a11y role/label; Storybook + a `composeStories` render test enforce a story per variant.
 
 **Tech Stack:** React 19, TypeScript 5.8 (strict), Vitest + jsdom + @testing-library/react + @testing-library/jest-dom, lucide-react (icons), Storybook 8 (`@storybook/react-vite`), Nx package-based targets (`lint`/`typecheck`/`test`/`build-storybook`).
 
@@ -14,8 +14,8 @@
 
 - **No raw colors, no magic numbers in `*.ts`/`*.tsx`** (enforced by `spoke/no-raw-colors` + `no-magic-numbers` on `libs/ui-web/**`). Colors come only from `cssVar(...)`; dimensions/type come only from `@spoke/design-tokens` member access. `*.spec.tsx`, `*.stories.tsx` are exempt by the existing eslint config.
 - **Imports use the `.js` extension** for intra-package ESM specifiers (matches `libs/design-tokens` style, e.g. `import { cssVar } from '../theme/themeVars.js';`).
-- **Color tokens → inline custom properties** named `--spk-bg`, `--spk-fg`, `--spk-bg-hover`, `--spk-border`, `--spk-presence`. **Type every style object as `StyleWithVars`** (exported from `theme/themeVars.ts`: `export type StyleWithVars = CSSProperties & Record<\`--${string}\`, string>;`) — do **NOT** use `as CSSProperties` casts. Example: `const style: StyleWithVars = { '--spk-bg': cssVar('primary'), minHeight: space[8], ...style };`. (Task 2's `themeVars.ts` exports this; the component task code blocks below still show the older `as CSSProperties` form — replace it with `StyleWithVars` typing when you implement them.)
-- **Forward `aria-*`, `role`, and `data-*`** on container/primitive components (Box/Text) via a pass-through index signature (`[k: \`aria-${string}\`]` / `[k: \`data-${string}\`]: string | undefined` plus `role?: string`). Components that extend a native element's props (Button/IconButton via `ComponentPropsWithoutRef`) already get these.
+- **Color tokens → inline custom properties** named `--spk-bg`, `--spk-fg`, `--spk-bg-hover`, `--spk-border`, `--spk-presence`. **Type every style object as `StyleWithVars`** (exported from `theme/themeVars.ts`: `export type StyleWithVars = CSSProperties & Record<\`--${string}\`, string>;`) — do **NOT** use `as CSSProperties`casts. Example:`const style: StyleWithVars = { '--spk-bg': cssVar('primary'), minHeight: space[8], ...style };`. (Task 2's `themeVars.ts`exports this; the component task code blocks below still show the older`as CSSProperties`form — replace it with`StyleWithVars` typing when you implement them.)
+- **Forward `aria-*`, `role`, and `data-*`** on container/primitive components (Box/Text) via a pass-through index signature (`[k: \`aria-${string}\`]` / `[k: \`data-${string}\`]: string | undefined`plus`role?: string`). Components that extend a native element's props (Button/IconButton via `ComponentPropsWithoutRef`) already get these.
 - **Every component forwards `className` and `style`** (user values win — spread user `style` last, append `className` after the `spk-*` class).
 - **Tests read tokens** by importing from `@spoke/design-tokens` and asserting against rendered values (e.g. `expect(el.style.getPropertyValue('--spk-bg')).toBe('var(--color-primary)')`, `expect(el.style.minHeight).toBe(\`${space[8]}px\`)`). Never hard-code the expected hex/px.
 - **No Claude attribution** in any commit message (no `Co-Authored-By` trailer). Commits use `ronyv250289@gmail.com` (already the worktree's `user.email`).
@@ -65,6 +65,7 @@ tsconfig.base.json             # add "@spoke/ui-web" path (Task 1)
 ### Task 1: Scaffold `@spoke/ui-web`
 
 **Files:**
+
 - Create: `libs/ui-web/package.json`
 - Create: `libs/ui-web/tsconfig.json`
 - Create: `libs/ui-web/vitest.config.ts`
@@ -130,7 +131,13 @@ tsconfig.base.json             # add "@spoke/ui-web" path (Task 1)
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["vitest/globals", "@testing-library/jest-dom"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "vitest.config.ts", ".storybook/**/*.ts", ".storybook/**/*.tsx"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "vitest.config.ts",
+    ".storybook/**/*.ts",
+    ".storybook/**/*.tsx"
+  ]
 }
 ```
 
@@ -213,6 +220,7 @@ git commit -m "feat(ui-web): scaffold @spoke/ui-web library with vitest + jsdom 
 ### Task 2: Theme bridge — `cssVar()` and `buildThemeCss()`
 
 **Files:**
+
 - Create: `libs/ui-web/src/theme/themeVars.ts`
 - Test: `libs/ui-web/src/theme/themeVars.spec.ts`
 
@@ -249,7 +257,9 @@ describe('buildThemeCss', () => {
   it('emits one declaration per color key in both themes', () => {
     const keys = Object.keys(lightTheme.color);
     for (const k of keys) {
-      expect(css).toContain(`--color-${k}: ${lightTheme.color[k as keyof typeof lightTheme.color]};`);
+      expect(css).toContain(
+        `--color-${k}: ${lightTheme.color[k as keyof typeof lightTheme.color]};`,
+      );
       expect(css).toContain(`--color-${k}: ${darkTheme.color[k as keyof typeof darkTheme.color]};`);
     }
   });
@@ -312,6 +322,7 @@ git commit -m "feat(ui-web): add token->CSS-variable bridge (cssVar, buildThemeC
 ### Task 3: `primitivesCss` base stylesheet
 
 **Files:**
+
 - Create: `libs/ui-web/src/theme/primitivesCss.ts`
 - Test: `libs/ui-web/src/theme/primitivesCss.spec.ts`
 
@@ -378,6 +389,7 @@ git commit -m "feat(ui-web): add shared primitives stylesheet with focus-ring ru
 ### Task 4: `ThemeProvider`
 
 **Files:**
+
 - Create: `libs/ui-web/src/theme/ThemeProvider.tsx`
 - Test: `libs/ui-web/src/theme/ThemeProvider.spec.tsx`
 - Modify: `libs/ui-web/src/index.ts`
@@ -456,13 +468,7 @@ Expected: FAIL — `ThemeProvider.js` not found.
 `libs/ui-web/src/theme/ThemeProvider.tsx`:
 
 ```tsx
-import {
-  createContext,
-  useContext,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import { buildThemeCss } from './themeVars.js';
 import { primitivesCss } from './primitivesCss.js';
 
@@ -551,6 +557,7 @@ git commit -m "feat(ui-web): add ThemeProvider with light/dark variable injectio
 ### Task 5: `Box` / `Stack` layout primitive
 
 **Files:**
+
 - Create: `libs/ui-web/src/components/Box.tsx`
 - Test: `libs/ui-web/src/components/Box.spec.tsx`
 - Modify: `libs/ui-web/src/theme/primitivesCss.ts` (append `.spk-box` block)
@@ -594,7 +601,9 @@ describe('Box', () => {
 
   it('exposes a background color token via a custom property', () => {
     render(<Box data-testid="b" background="bgSecondary" />);
-    expect(screen.getByTestId('b').style.getPropertyValue('--spk-bg')).toBe('var(--color-bgSecondary)');
+    expect(screen.getByTestId('b').style.getPropertyValue('--spk-bg')).toBe(
+      'var(--color-bgSecondary)',
+    );
   });
 
   it('merges user className and style (user style wins)', () => {
@@ -711,6 +720,7 @@ git commit -m "feat(ui-web): add Box/Stack layout primitive"
 ### Task 6: `Text`
 
 **Files:**
+
 - Create: `libs/ui-web/src/components/Text.tsx`
 - Test: `libs/ui-web/src/components/Text.spec.tsx`
 - Modify: `libs/ui-web/src/theme/primitivesCss.ts` (append `.spk-text` block)
@@ -750,9 +760,13 @@ describe('Text', () => {
 
   it('exposes the color token via a custom property (default textPrimary)', () => {
     render(<Text>a</Text>);
-    expect(screen.getByText('a').style.getPropertyValue('--spk-fg')).toBe('var(--color-textPrimary)');
+    expect(screen.getByText('a').style.getPropertyValue('--spk-fg')).toBe(
+      'var(--color-textPrimary)',
+    );
     render(<Text color="textTertiary">b</Text>);
-    expect(screen.getByText('b').style.getPropertyValue('--spk-fg')).toBe('var(--color-textTertiary)');
+    expect(screen.getByText('b').style.getPropertyValue('--spk-fg')).toBe(
+      'var(--color-textTertiary)',
+    );
   });
 
   it('clamps to numberOfLines', () => {
@@ -863,6 +877,7 @@ git commit -m "feat(ui-web): add Text primitive with textStyle presets"
 ### Task 7: `Icon`
 
 **Files:**
+
 - Create: `libs/ui-web/src/components/Icon.tsx`
 - Test: `libs/ui-web/src/components/Icon.spec.tsx`
 - Modify: `libs/ui-web/src/index.ts`
@@ -979,6 +994,7 @@ git commit -m "feat(ui-web): add Icon primitive wrapping lucide-react"
 ### Task 8: `Spinner`
 
 **Files:**
+
 - Create: `libs/ui-web/src/components/Spinner.tsx`
 - Test: `libs/ui-web/src/components/Spinner.spec.tsx`
 - Modify: `libs/ui-web/src/theme/primitivesCss.ts` (append `.spk-spinner` + keyframes)
@@ -1017,7 +1033,9 @@ describe('Spinner', () => {
 
   it('exposes the color token via a custom property', () => {
     render(<Spinner color="textLink" />);
-    expect(screen.getByRole('status').style.getPropertyValue('--spk-fg')).toBe('var(--color-textLink)');
+    expect(screen.getByRole('status').style.getPropertyValue('--spk-fg')).toBe(
+      'var(--color-textLink)',
+    );
   });
 });
 ```
@@ -1046,7 +1064,13 @@ export interface SpinnerProps {
   style?: CSSProperties;
 }
 
-export function Spinner({ size = 'md', color = 'textSecondary', label = 'Loading', className, style }: SpinnerProps) {
+export function Spinner({
+  size = 'md',
+  color = 'textSecondary',
+  label = 'Loading',
+  className,
+  style,
+}: SpinnerProps) {
   const px = SPINNER_SIZE[size];
   const composed = { '--spk-fg': cssVar(color), ...style } as CSSProperties;
   return (
@@ -1056,9 +1080,21 @@ export function Spinner({ size = 'md', color = 'textSecondary', label = 'Loading
       className={['spk-spinner', className].filter(Boolean).join(' ')}
       style={composed}
     >
-      <svg className="spk-spin" width={px} height={px} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <svg
+        className="spk-spin"
+        width={px}
+        height={px}
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
         <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
-        <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+        <path
+          d="M21 12a9 9 0 0 0-9-9"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
       </svg>
     </span>
   );
@@ -1077,13 +1113,17 @@ Append inside the `primitivesCss` template (before the closing backtick):
   color: var(--spk-fg, var(--color-textSecondary));
 }
 @keyframes spk-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 .spk-spin {
   animation: spk-spin 0.7s linear infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .spk-spin { animation-duration: 2s; }
+  .spk-spin {
+    animation-duration: 2s;
+  }
 }
 ```
 
@@ -1112,6 +1152,7 @@ git commit -m "feat(ui-web): add Spinner primitive"
 ### Task 9: `Button`
 
 **Files:**
+
 - Create: `libs/ui-web/src/components/Button.tsx`
 - Test: `libs/ui-web/src/components/Button.spec.tsx`
 - Modify: `libs/ui-web/src/theme/primitivesCss.ts` (append `.spk-button` block)
@@ -1155,9 +1196,9 @@ describe('Button', () => {
 
   it('gives the secondary variant a border token', () => {
     render(<Button variant="secondary">More</Button>);
-    expect(screen.getByRole('button', { name: 'More' }).style.getPropertyValue('--spk-border')).toBe(
-      'var(--color-borderStrong)',
-    );
+    expect(
+      screen.getByRole('button', { name: 'More' }).style.getPropertyValue('--spk-border'),
+    ).toBe('var(--color-borderStrong)');
   });
 
   it('sizes height from the space scale', () => {
@@ -1178,7 +1219,11 @@ describe('Button', () => {
     const { rerender } = render(<Button onClick={onClick}>Go</Button>);
     await userEvent.click(screen.getByRole('button'));
     expect(onClick).toHaveBeenCalledTimes(1);
-    rerender(<Button onClick={onClick} disabled>Go</Button>);
+    rerender(
+      <Button onClick={onClick} disabled>
+        Go
+      </Button>,
+    );
     await userEvent.click(screen.getByRole('button'));
     expect(onClick).toHaveBeenCalledTimes(1);
   });
@@ -1219,7 +1264,10 @@ const SIZE_TOKENS: Record<ButtonSize, { minHeight: number; paddingX: number; fon
   lg: { minHeight: space[12], paddingX: space[5], fontSize: fontSize.md },
 };
 
-export interface ButtonProps extends Omit<ComponentPropsWithoutRef<'button'>, 'style' | 'className'> {
+export interface ButtonProps extends Omit<
+  ComponentPropsWithoutRef<'button'>,
+  'style' | 'className'
+> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
@@ -1302,7 +1350,12 @@ Append inside the `primitivesCss` template (before the closing backtick):
 Add to `libs/ui-web/src/index.ts`:
 
 ```ts
-export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from './components/Button.js';
+export {
+  Button,
+  type ButtonProps,
+  type ButtonVariant,
+  type ButtonSize,
+} from './components/Button.js';
 ```
 
 - [ ] **Step 6: Run tests + lint + typecheck**
@@ -1322,6 +1375,7 @@ git commit -m "feat(ui-web): add Button primitive with variants, sizes, loading"
 ### Task 10: `IconButton`
 
 **Files:**
+
 - Create: `libs/ui-web/src/components/IconButton.tsx`
 - Test: `libs/ui-web/src/components/IconButton.spec.tsx`
 - Modify: `libs/ui-web/src/theme/primitivesCss.ts` (append `.spk-iconbutton` block)
@@ -1355,7 +1409,9 @@ describe('IconButton', () => {
 
   it('uses the mobile touch-target size at lg', () => {
     render(<IconButton icon="Search" label="Search" size="lg" />);
-    expect(screen.getByRole('button', { name: 'Search' }).style.width).toBe(`${layout.touchTarget}px`);
+    expect(screen.getByRole('button', { name: 'Search' }).style.width).toBe(
+      `${layout.touchTarget}px`,
+    );
   });
 
   it('shows a spinner and disables while loading', () => {
@@ -1399,14 +1455,19 @@ const BTN_SIZE: Record<IconButtonSize, number> = {
 };
 const ICON_FOR: Record<IconButtonSize, IconSize> = { sm: 'sm', md: 'md', lg: 'md' };
 
-const VARIANT_TOKENS: Record<IconButtonVariant, { bg?: ColorKey; fg: ColorKey; bgHover: ColorKey }> = {
+const VARIANT_TOKENS: Record<
+  IconButtonVariant,
+  { bg?: ColorKey; fg: ColorKey; bgHover: ColorKey }
+> = {
   ghost: { fg: 'textSecondary', bgHover: 'bgHover' },
   primary: { bg: 'primary', fg: 'textOnBrand', bgHover: 'primaryHover' },
   danger: { fg: 'textDanger', bgHover: 'bgHover' },
 };
 
-export interface IconButtonProps
-  extends Omit<ComponentPropsWithoutRef<'button'>, 'style' | 'className'> {
+export interface IconButtonProps extends Omit<
+  ComponentPropsWithoutRef<'button'>,
+  'style' | 'className'
+> {
   icon: IconName;
   /** Required accessible name. */
   label: string;
@@ -1451,7 +1512,11 @@ export function IconButton({
       aria-busy={loading || undefined}
       {...rest}
     >
-      {loading ? <Spinner size="sm" color={v.fg} /> : <Icon name={icon} size={ICON_FOR[size]} color={v.fg} />}
+      {loading ? (
+        <Spinner size="sm" color={v.fg} />
+      ) : (
+        <Icon name={icon} size={ICON_FOR[size]} color={v.fg} />
+      )}
     </button>
   );
 }
@@ -1510,6 +1575,7 @@ git commit -m "feat(ui-web): add IconButton primitive"
 ### Task 11: `Avatar`
 
 **Files:**
+
 - Create: `libs/ui-web/src/components/Avatar.tsx`
 - Test: `libs/ui-web/src/components/Avatar.spec.tsx`
 - Modify: `libs/ui-web/src/theme/primitivesCss.ts` (append `.spk-avatar` + `.spk-presence` blocks)
@@ -1714,6 +1780,7 @@ git commit -m "feat(ui-web): add Avatar primitive with presence dot"
 ### Task 12: `Input`
 
 **Files:**
+
 - Create: `libs/ui-web/src/components/Input.tsx`
 - Test: `libs/ui-web/src/components/Input.spec.tsx`
 - Modify: `libs/ui-web/src/theme/primitivesCss.ts` (append `.spk-input` block)
@@ -1757,7 +1824,13 @@ describe('Input', () => {
 
   it('renders prefix and suffix slots', () => {
     render(
-      <Input value="" onChange={() => {}} aria-label="Search" prefix={<span>P</span>} suffix={<span>S</span>} />,
+      <Input
+        value=""
+        onChange={() => {}}
+        aria-label="Search"
+        prefix={<span>P</span>}
+        suffix={<span>S</span>}
+      />,
     );
     expect(screen.getByText('P')).toBeInTheDocument();
     expect(screen.getByText('S')).toBeInTheDocument();
@@ -1895,6 +1968,7 @@ git commit -m "feat(ui-web): add Input primitive with prefix/suffix and error st
 ### Task 13: `Badge`
 
 **Files:**
+
 - Create: `libs/ui-web/src/components/Badge.tsx`
 - Test: `libs/ui-web/src/components/Badge.spec.tsx`
 - Modify: `libs/ui-web/src/theme/primitivesCss.ts` (append `.spk-badge` block)
@@ -1919,7 +1993,9 @@ describe('Badge', () => {
 
   it('uses the unread token for the unread variant', () => {
     render(<Badge count={5} variant="unread" />);
-    expect(screen.getByText('5').style.getPropertyValue('--spk-bg')).toBe('var(--color-unreadBadge)');
+    expect(screen.getByText('5').style.getPropertyValue('--spk-bg')).toBe(
+      'var(--color-unreadBadge)',
+    );
   });
 
   it('renders nothing when count is zero or negative', () => {
@@ -2037,6 +2113,7 @@ git commit -m "feat(ui-web): add Badge primitive (mention/unread)"
 ### Task 14: `Divider`
 
 **Files:**
+
 - Create: `libs/ui-web/src/components/Divider.tsx`
 - Test: `libs/ui-web/src/components/Divider.spec.tsx`
 - Modify: `libs/ui-web/src/theme/primitivesCss.ts` (append `.spk-divider` block)
@@ -2150,6 +2227,7 @@ git commit -m "feat(ui-web): add Divider primitive"
 ### Task 15: Storybook + per-variant stories + CI render coverage
 
 **Files:**
+
 - Create: `libs/ui-web/.storybook/main.ts`
 - Create: `libs/ui-web/.storybook/preview.tsx`
 - Create: one `*.stories.tsx` per component (10 files, listed below)
@@ -2304,7 +2382,9 @@ export default meta;
 type Story = StoryObj<typeof Icon>;
 
 export const Default: Story = { args: { name: 'Hash', label: 'channel' } };
-export const Large: Story = { args: { name: 'Send', size: 'lg', color: 'actionSend', label: 'send' } };
+export const Large: Story = {
+  args: { name: 'Send', size: 'lg', color: 'actionSend', label: 'send' },
+};
 ```
 
 `libs/ui-web/src/components/Button.stories.tsx`:
@@ -2367,7 +2447,15 @@ type Story = StoryObj<typeof Input>;
 
 function Controlled(args: { error?: boolean }) {
   const [value, setValue] = useState('');
-  return <Input value={value} onChange={setValue} aria-label="Demo" placeholder="Type…" error={args.error} />;
+  return (
+    <Input
+      value={value}
+      onChange={setValue}
+      aria-label="Demo"
+      placeholder="Type…"
+      error={args.error}
+    />
+  );
 }
 
 export const Default: Story = { render: () => <Controlled /> };
@@ -2454,6 +2542,7 @@ git commit -m "feat(ui-web): add Storybook with per-variant stories and CI rende
 ### Task 16: Package `CLAUDE.md` + root routing entry
 
 **Files:**
+
 - Create: `libs/ui-web/CLAUDE.md`
 - Modify: `CLAUDE.md` (root — add the routing line)
 
@@ -2461,7 +2550,7 @@ git commit -m "feat(ui-web): add Storybook with per-variant stories and CI rende
 
 `libs/ui-web/CLAUDE.md`:
 
-````markdown
+```markdown
 # @spoke/ui-web
 
 React (DOM) implementation of the Spoke design system. Visual parity twin of
@@ -2513,7 +2602,7 @@ sizing tokens.
 ## Commands
 
 `npx nx run-many -t lint typecheck test -p @spoke/ui-web` · `npx nx run @spoke/ui-web:build-storybook`
-````
+```
 
 - [ ] **Step 2: Add the root routing line**
 

@@ -16,16 +16,16 @@ const VARIANT_TOKENS: Record<
   danger: { bg: 'textDanger', fg: 'textOnBrand', bgHover: 'textDanger' },
 };
 
-const SIZE_TOKENS: Record<
-  ButtonSize,
-  { minHeight: number; paddingX: number; fontSize: number }
-> = {
+const SIZE_TOKENS: Record<ButtonSize, { minHeight: number; paddingX: number; fontSize: number }> = {
   sm: { minHeight: space[8], paddingX: space[3], fontSize: fontSize.sm },
   md: { minHeight: space[10], paddingX: space[4], fontSize: fontSize.base },
   lg: { minHeight: space[12], paddingX: space[5], fontSize: fontSize.md },
 };
 
-export interface ButtonProps extends Omit<ComponentPropsWithoutRef<'button'>, 'style' | 'className'> {
+export interface ButtonProps extends Omit<
+  ComponentPropsWithoutRef<'button'>,
+  'style' | 'className'
+> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;

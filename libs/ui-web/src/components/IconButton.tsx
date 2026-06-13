@@ -14,14 +14,19 @@ const BTN_SIZE: Record<IconButtonSize, number> = {
 };
 const ICON_FOR: Record<IconButtonSize, IconSize> = { sm: 'sm', md: 'md', lg: 'md' };
 
-const VARIANT_TOKENS: Record<IconButtonVariant, { bg?: ColorKey; fg: ColorKey; bgHover: ColorKey }> = {
+const VARIANT_TOKENS: Record<
+  IconButtonVariant,
+  { bg?: ColorKey; fg: ColorKey; bgHover: ColorKey }
+> = {
   ghost: { fg: 'textSecondary', bgHover: 'bgHover' },
   primary: { bg: 'primary', fg: 'textOnBrand', bgHover: 'primaryHover' },
   danger: { fg: 'textDanger', bgHover: 'bgHover' },
 };
 
-export interface IconButtonProps
-  extends Omit<ComponentPropsWithoutRef<'button'>, 'style' | 'className'> {
+export interface IconButtonProps extends Omit<
+  ComponentPropsWithoutRef<'button'>,
+  'style' | 'className'
+> {
   icon: IconName;
   /** Required accessible name. */
   label: string;
@@ -66,7 +71,11 @@ export function IconButton({
       aria-busy={loading || undefined}
       {...rest}
     >
-      {loading ? <Spinner size="sm" color={v.fg} /> : <Icon name={icon} size={ICON_FOR[size]} color={v.fg} />}
+      {loading ? (
+        <Spinner size="sm" color={v.fg} />
+      ) : (
+        <Icon name={icon} size={ICON_FOR[size]} color={v.fg} />
+      )}
     </button>
   );
 }

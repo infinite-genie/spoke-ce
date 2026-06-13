@@ -31,7 +31,13 @@ describe('Input', () => {
 
   it('renders prefix and suffix slots', () => {
     render(
-      <Input value="" onChange={() => {}} aria-label="Search" prefix={<span>P</span>} suffix={<span>S</span>} />,
+      <Input
+        value=""
+        onChange={() => {}}
+        aria-label="Search"
+        prefix={<span>P</span>}
+        suffix={<span>S</span>}
+      />,
     );
     expect(screen.getByText('P')).toBeInTheDocument();
     expect(screen.getByText('S')).toBeInTheDocument();

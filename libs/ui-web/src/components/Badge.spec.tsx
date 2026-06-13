@@ -12,7 +12,9 @@ describe('Badge', () => {
 
   it('uses the unread token for the unread variant', () => {
     render(<Badge count={5} variant="unread" />);
-    expect(screen.getByText('5').style.getPropertyValue('--spk-bg')).toBe('var(--color-unreadBadge)');
+    expect(screen.getByText('5').style.getPropertyValue('--spk-bg')).toBe(
+      'var(--color-unreadBadge)',
+    );
   });
 
   it('renders nothing when count is zero or negative', () => {
