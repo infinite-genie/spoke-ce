@@ -45,4 +45,20 @@ export const primitivesCss = `
   opacity: 0.55;
   cursor: not-allowed;
 }
+.spk-iconbutton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--spk-bg, transparent);
+  color: var(--spk-fg);
+  border: none;
+  cursor: pointer;
+}
+.spk-iconbutton:hover:not(:disabled) {
+  background: var(--spk-bg-hover);
+}
+.spk-iconbutton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 `;
