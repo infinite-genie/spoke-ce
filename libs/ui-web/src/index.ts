@@ -19,3 +19,4 @@ export {
 } from './components/IconButton.js';
 export { Avatar, type AvatarProps, type AvatarSize, type Presence } from './components/Avatar.js';
 export { Input, type InputProps } from './components/Input.js';
+export { Badge, type BadgeProps, type BadgeVariant } from './components/Badge.js';

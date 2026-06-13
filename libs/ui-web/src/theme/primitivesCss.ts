@@ -109,4 +109,12 @@ export const primitivesCss = `
 .spk-input input::placeholder {
   color: var(--color-textTertiary);
 }
+.spk-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--spk-bg);
+  color: var(--spk-fg);
+  box-sizing: border-box;
+}
 `;
