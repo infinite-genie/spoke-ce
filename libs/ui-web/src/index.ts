@@ -7,3 +7,4 @@ export {
   type ThemeProviderProps,
 } from './theme/ThemeProvider.js';
 export { Box, Stack, type BoxProps } from './components/Box.js';
+export { Text, type TextProps, type TextVariant } from './components/Text.js';

@@ -34,7 +34,7 @@ export function Text({
 
   const composed = {
     ...textStyle[variant],
-    '--spk-fg': cssVar(color),
+    ...({ '--spk-fg': cssVar(color) } as CSSProperties),
     ...clamp,
     ...style,
   } as CSSProperties;

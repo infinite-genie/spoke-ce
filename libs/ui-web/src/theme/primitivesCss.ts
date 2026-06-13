@@ -12,4 +12,7 @@ export const primitivesCss = `
 .spk-box {
   background: var(--spk-bg, transparent);
 }
+.spk-text {
+  color: var(--spk-fg, var(--color-textPrimary));
+}
 `;
